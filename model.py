@@ -45,7 +45,7 @@ class Model(object):
         threads = tf.train.start_queue_runners(coord=self.coord, sess=self.sess)
 
         # Train!
-        for step in range(self.conf.num_steps+1):
+        for step in range(self.conf.start_step, self.conf.start_step+self.conf.num_steps+1):
             start_time = time.time()
             feed_dict = { self.curr_step : step }
 
@@ -71,6 +71,17 @@ class Model(object):
         # finish
         self.coord.request_stop()
         self.coord.join(threads)
+
+    # train and validate model
+    def train_test(self):
+        for it in range(self.conf.num_iterations+1):
+            # train
+            self.train()
+            self.conf.valid_step = (it+1)*self.conf.num_steps
+
+            # validate
+            self.test()
+            self.conf.pretrain_file = self.conf.modeldir+ '/model.ckpt-' + str(self.conf.valid_step)
 
     # evaluate
     def test(self):

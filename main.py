@@ -15,17 +15,22 @@ def configure():
     flags = tf.app.flags
 
     # training
-    flags.DEFINE_integer('num_steps', 50000, 'maximum number of iterations')
-    flags.DEFINE_integer('save_interval', 5000, 'number of iterations for saving and visualization')
+    flags.DEFINE_integer('start_step', 0, 'start number of iterations')
+    flags.DEFINE_integer('num_steps', 2000, 'maximum number of iterations')
+    flags.DEFINE_integer('save_interval', 10000, 'number of iterations for saving and visualization')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
     flags.DEFINE_float('weight_decay', 0.0005, 'weight decay rate')
     flags.DEFINE_float('learning_rate', 0.001, 'learning rate')
     flags.DEFINE_float('power', 0.9, 'hyperparameter for poly learning rate')
     flags.DEFINE_float('momentum', 0.9, 'momentum')
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
-    flags.DEFINE_string('pretrain_file', '../reference model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
+    flags.DEFINE_string('pretrain_file',
+                        '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('dilated_type', 'smooth_GI', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
     flags.DEFINE_string('data_list', './dataset/train.txt', 'training data list filename')
+
+    # train & validate
+    flags.DEFINE_integer('num_iterations', 2, 'number of test & validate iterations')
 
     # validation
     flags.DEFINE_integer('valid_step', 50000, 'checkpoint number for validation')
@@ -60,12 +65,12 @@ def configure():
 def main(_):
     parser = argparse.ArgumentParser()
     parser.add_argument('--option', dest='option', type=str, default='train',
-        help='actions: train, test, or predict')
+        help='actions: train, test, predict or train_test')
     args = parser.parse_args()
 
-    if args.option not in ['train', 'test', 'predict']:
+    if args.option not in ['train', 'test', 'predict', 'train_test']:
         print('invalid option: ', args.option)
-        print("Please input a option: train, test, or predict")
+        print("Please input a option: train, test, predict or train_test")
     else:
         # Set up tf session and initialize variables.
         # config = tf.ConfigProto()
