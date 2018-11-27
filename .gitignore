@@ -1,0 +1,13 @@
+# log files
+log/
+log.txt
+
+# leonhard cluster job log
+lsf.*
+
+# 
+__pycache__/
+
+# model checkpoints
+model/
+
