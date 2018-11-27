@@ -65,7 +65,7 @@ class Model(object):
 					feed_dict=feed_dict)
 
 			duration = time.time() - start_time
-			print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+#			print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
 			write_log('{:d}, {:.3f}'.format(step, loss_value), self.conf.logfile)
 
 		# finish
@@ -92,9 +92,9 @@ class Model(object):
 			preds, _, _, c_matrix = self.sess.run([self.pred, self.accu_update_op, self.mIou_update_op, self.confusion_matrix])
 			confusion_matrix += c_matrix
 			if step % 100 == 0:
-				print('step {:d}'.format(step))
-		print('Pixel Accuracy: {:.3f}'.format(self.accu.eval(session=self.sess)))
-		print('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)))
+				write_log('step {:d}'.format(step), self.conf.logfile)
+		write_log('Pixel Accuracy: {:.3f}'.format(self.accu.eval(session=self.sess)), self.conf.logfile)
+		write_log('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)), self.conf.logfile)
 		self.compute_IoU_per_class(confusion_matrix)
 
 		# finish
@@ -138,9 +138,9 @@ class Model(object):
 				im.save(self.conf.out_dir + '/visual_prediction' + filename)
 
 			if step % 100 == 0:
-				print('step {:d}'.format(step))
+				write_log('step {:d}'.format(step), self.conf.logfile)
 
-		print('The output files has been saved to {}'.format(self.conf.out_dir))
+		write_log('The output files has been saved to {}'.format(self.conf.out_dir), self.conf.logfile)
 
 		# finish
 		self.coord.request_stop()
@@ -384,14 +384,14 @@ class Model(object):
 		if not os.path.exists(self.conf.modeldir):
 			os.makedirs(self.conf.modeldir)
 		saver.save(self.sess, checkpoint_path, global_step=step)
-		print('The checkpoint has been created.')
+		write_log('The checkpoint has been created.', self.conf.logfile)
 
 	def load(self, saver, filename):
 		'''
 		Load trained weights.
 		''' 
 		saver.restore(self.sess, filename)
-		print("Restored model parameters from {}".format(filename))
+		write_log("Restored model parameters from {}".format(filename), self.conf.logfile)
 
 	def compute_IoU_per_class(self, confusion_matrix):
 		mIoU = 0
@@ -401,6 +401,6 @@ class Model(object):
 			FP = np.sum(confusion_matrix[:, i]) - TP
 			FN = np.sum(confusion_matrix[i]) - TP
 			IoU = TP / (TP + FP + FN)
-			print ('class %d: %.3f' % (i, IoU))
+			write_log ('class %d: %.3f' % (i, IoU), self.conf.logfile)
 			mIoU += IoU / self.conf.num_classes
-		print ('mIoU: %.3f' % mIoU)
+		write_log ('mIoU: %.3f' % mIoU, self.conf.logfile)
