@@ -95,6 +95,7 @@ def main(_):
             for i in range(0, num_iterations):
                 write_log ('Iteration: %d' % (i+1), FLAGS.__flags['logfile'])
 
+
                 # set flags
                 start_step = i*num_steps
                 valid_step = (i+1)*num_steps
@@ -105,19 +106,26 @@ def main(_):
                 # train
                 sess = tf.Session()
                 model = Model(sess, FLAGS)
-                getattr(model, 'train')()
+#                getattr(model, 'train')()
                 tf.reset_default_graph()
 
                 # test
                 sess = tf.Session()
                 model = Model(sess, FLAGS)
-                getattr(model, 'test')()
+#                getattr(model, 'test')()
                 tf.reset_default_graph()
 
                 # load previous model
                 pretrain_file = './model/model.ckpt-' + str(valid_step)
                 FLAGS.__flags['pretrain_file'] = pretrain_file
 
+                # delete model files if they exists
+                try:
+                    os.remove('./model/model.ckpt-' + str(start_step) + '.data-00000-of-00001')
+                    os.remove('./model/model.ckpt-' + str(start_step) + '.index')
+                    os.remove('./model/model.ckpt-' + str(start_step) + '.meta')
+                except OSError:
+                    pass
 
         else:
             # Set up tf session and initialize variables.
