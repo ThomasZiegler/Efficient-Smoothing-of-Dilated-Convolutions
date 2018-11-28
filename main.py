@@ -32,6 +32,7 @@ def configure():
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
 #    flags.DEFINE_string('pretrain_file', pretrain_file_, 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('pretrain_file', '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
+    flags.DEFINE_string('checkpoint_file', '../reference_model/deeplab_resnet_init.ckpt', 'checkpoint model filename corresponding to encoder_name')
     flags.DEFINE_string('dilated_type', 'smooth_GI', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
     flags.DEFINE_string('data_list', './dataset/train.txt', 'training data list filename')
 
@@ -116,8 +117,8 @@ def main(_):
                 tf.reset_default_graph()
 
                 # load previous model
-                pretrain_file = './model/model.ckpt-' + str(valid_step)
-                FLAGS.__flags['pretrain_file'] = pretrain_file
+                checkpoint_file = './model/model.ckpt-' + str(valid_step)
+                FLAGS.__flags['checkpoint_file'] = checkpoint_file
 
                 # delete model files if they exists
                 try:

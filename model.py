@@ -38,8 +38,8 @@ class Model(object):
         self.sess.run(tf.global_variables_initializer())
 
         # Load the pre-trained model if provided
-        if self.conf.pretrain_file is not None:
-            self.load(self.loader, self.conf.pretrain_file)
+        if self.conf.checkpoint_file is not None:
+            self.load(self.loader, self.conf.checkpoint_file)
 
         # Start queue threads.
         threads = tf.train.start_queue_runners(coord=self.coord, sess=self.sess)
