@@ -11,12 +11,13 @@ This script defines hyperparameters.
 
 
 
-def configure():
+def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
+              '../reference_model/deeplab_resnet_init.ckpt', valid_step_ = 2000):
     flags = tf.app.flags
 
     # training
-    flags.DEFINE_integer('start_step', 0, 'start number of iterations')
-    flags.DEFINE_integer('num_steps', 2000, 'maximum number of iterations')
+    flags.DEFINE_integer('start_step', start_step_, 'start number of iterations')
+    flags.DEFINE_integer('num_steps', num_steps_, 'maximum number of iterations')
     flags.DEFINE_integer('save_interval', 10000, 'number of iterations for saving and visualization')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
     flags.DEFINE_float('weight_decay', 0.0005, 'weight decay rate')
@@ -24,8 +25,7 @@ def configure():
     flags.DEFINE_float('power', 0.9, 'hyperparameter for poly learning rate')
     flags.DEFINE_float('momentum', 0.9, 'momentum')
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
-    flags.DEFINE_string('pretrain_file',
-                        '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
+    flags.DEFINE_string('pretrain_file', pretrain_file_, 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('dilated_type', 'smooth_GI', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
     flags.DEFINE_string('data_list', './dataset/train.txt', 'training data list filename')
 
@@ -33,7 +33,7 @@ def configure():
     flags.DEFINE_integer('num_iterations', 2, 'number of test & validate iterations')
 
     # validation
-    flags.DEFINE_integer('valid_step', 50000, 'checkpoint number for validation')
+    flags.DEFINE_integer('valid_step', valid_step_, 'checkpoint number for validation')
     flags.DEFINE_integer('valid_num_steps', 1449, '= number of validation samples')
     flags.DEFINE_string('valid_data_list', './dataset/val.txt', 'validation data list filename')
 
@@ -72,17 +72,39 @@ def main(_):
         print('invalid option: ', args.option)
         print("Please input a option: train, test, predict or train_test")
     else:
-        # Set up tf session and initialize variables.
-        # config = tf.ConfigProto()
-        # config.gpu_options.allow_growth = True
-        # sess = tf.Session(config=config)
-        sess = tf.Session()
-        # Run
-        model = Model(sess, configure())
-        getattr(model, args.option)()
+        if args.option == 'train_test':
+            num_iterations = 2
+            num_steps = 2
+
+            for i in range(0, num_iterations):
+                # train
+                start_step = i*num_steps
+                valid_step = (i+1)*num_steps
+                pretrain_file = './model.ckpt-' + str(start_step)
+                sess = tf.Session()
+                model = Model(sess, configure(start_step, num_steps,
+                                              pretrain_file, valid_step))
+                getattr(model, 'train')()
+
+                # test
+                sess = tf.Session()
+                model = Model(sess, configure(start_step, num_steps,
+                                              pretrain_file, valid_step))
+                getattr(model, 'test')()
+
+        else:
+            # Set up tf session and initialize variables.
+            # config = tf.ConfigProto()
+            # config.gpu_options.allow_growth = True
+            # sess = tf.Session(config=config)
+            sess = tf.Session()
+            # Run
+            model = Model(sess, configure())
+            getattr(model, args.option)()
 
 
 if __name__ == '__main__':
     # Choose which gpu or cpu to use
     # os.environ['CUDA_VISIBLE_DEVICES'] = '7'
     tf.app.run()
+
