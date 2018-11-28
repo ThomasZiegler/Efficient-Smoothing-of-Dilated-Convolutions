@@ -5,6 +5,8 @@ import argparse
 import os
 import tensorflow as tf
 from model import Model
+from utils import write_log
+
 """
 This script defines hyperparameters.
 """
@@ -91,6 +93,8 @@ def main(_):
             FLAGS.__flags['num_steps'] = num_steps
 
             for i in range(0, num_iterations):
+                write_log ('Iteration: %d' % i+1, FLAGS.__flags['logfile'])
+
                 # set flags
                 start_step = i*num_steps
                 valid_step = (i+1)*num_steps
