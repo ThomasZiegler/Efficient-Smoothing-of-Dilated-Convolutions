@@ -106,13 +106,13 @@ def main(_):
                 # train
                 sess = tf.Session()
                 model = Model(sess, FLAGS)
-#                getattr(model, 'train')()
+                getattr(model, 'train')()
                 tf.reset_default_graph()
 
                 # test
                 sess = tf.Session()
                 model = Model(sess, FLAGS)
-#                getattr(model, 'test')()
+                getattr(model, 'test')()
                 tf.reset_default_graph()
 
                 # load previous model
