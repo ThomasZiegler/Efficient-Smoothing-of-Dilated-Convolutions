@@ -88,8 +88,8 @@ def main(_):
         print("Please input a option: train, test, predict or train_test")
     else:
         if args.option == 'train_test':
-            num_iterations = 2
-            num_steps = 20
+            num_iterations = 20
+            num_steps = 2000
             FLAGS = configure()
             FLAGS.__flags['num_steps'] = num_steps
 
