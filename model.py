@@ -69,6 +69,7 @@ class Model(object):
             write_log('{:d}, {:.3f}'.format(step, loss_value), self.conf.logfile)
 
         # finish
+        self.save(self.saver, step)
         self.coord.request_stop()
         self.coord.join(threads)
 
