@@ -11,13 +11,16 @@ This script defines hyperparameters.
 
 
 
-def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
-              '../reference_model/deeplab_resnet_init.ckpt', valid_step_ = 2000):
+#def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
+#              '../reference_model/deeplab_resnet_init.ckpt', valid_step_ = 2000):
+def configure():
     flags = tf.app.flags
 
     # training
-    flags.DEFINE_integer('start_step', start_step_, 'start number of iterations')
-    flags.DEFINE_integer('num_steps', num_steps_, 'maximum number of iterations')
+#    flags.DEFINE_integer('start_step', start_step_, 'start number of iterations')
+#    flags.DEFINE_integer('num_steps', num_steps_, 'maximum number of iterations')
+    flags.DEFINE_integer('start_step', 0, 'start number of iterations')
+    flags.DEFINE_integer('num_steps', 20, 'maximum number of iterations')
     flags.DEFINE_integer('save_interval', 10000, 'number of iterations for saving and visualization')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
     flags.DEFINE_float('weight_decay', 0.0005, 'weight decay rate')
@@ -25,7 +28,8 @@ def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
     flags.DEFINE_float('power', 0.9, 'hyperparameter for poly learning rate')
     flags.DEFINE_float('momentum', 0.9, 'momentum')
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
-    flags.DEFINE_string('pretrain_file', pretrain_file_, 'pre-trained model filename corresponding to encoder_name')
+#    flags.DEFINE_string('pretrain_file', pretrain_file_, 'pre-trained model filename corresponding to encoder_name')
+    flags.DEFINE_string('pretrain_file', '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('dilated_type', 'smooth_GI', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
     flags.DEFINE_string('data_list', './dataset/train.txt', 'training data list filename')
 
@@ -33,7 +37,8 @@ def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
     flags.DEFINE_integer('num_iterations', 2, 'number of test & validate iterations')
 
     # validation
-    flags.DEFINE_integer('valid_step', valid_step_, 'checkpoint number for validation')
+#    flags.DEFINE_integer('valid_step', valid_step_, 'checkpoint number for validation')
+    flags.DEFINE_integer('valid_step', 20, 'checkpoint number for validation')
     flags.DEFINE_integer('valid_num_steps', 1449, '= number of validation samples')
     flags.DEFINE_string('valid_data_list', './dataset/val.txt', 'validation data list filename')
 
@@ -58,9 +63,16 @@ def configure(start_step_ = 0, num_steps_ = 2000, pretrain_file_ =
     flags.DEFINE_string('modeldir', 'model', 'model directory')
     flags.DEFINE_string('logfile', 'log.txt', 'training log filename')
     flags.DEFINE_string('logdir', 'log', 'training log directory')
-    
-    flags.FLAGS.__dict__['__parsed'] = False
+
+    flags.FLAGS._parse_flags()
     return flags.FLAGS
+
+def del_all_flags(FLAGS):
+    if not FLAGS.__dict__['__parsed']:
+        FLAGS._parse_flags()
+    for key in FLAGS.__flags.keys():
+        FLAGS.__delattr__(key)
+
 
 def main(_):
     parser = argparse.ArgumentParser()
@@ -74,23 +86,33 @@ def main(_):
     else:
         if args.option == 'train_test':
             num_iterations = 2
-            num_steps = 2
+            num_steps = 1
+            FLAGS = configure()
+            FLAGS.__flags['num_steps'] = num_steps
 
             for i in range(0, num_iterations):
-                # train
+                # set flags
                 start_step = i*num_steps
                 valid_step = (i+1)*num_steps
-                pretrain_file = './model.ckpt-' + str(start_step)
+                FLAGS.__flags['start_step'] = start_step
+                FLAGS.__flags['valid_step'] = valid_step
+
+
+                # train
                 sess = tf.Session()
-                model = Model(sess, configure(start_step, num_steps,
-                                              pretrain_file, valid_step))
+                model = Model(sess, FLAGS)
                 getattr(model, 'train')()
+                tf.reset_default_graph()
 
                 # test
                 sess = tf.Session()
-                model = Model(sess, configure(start_step, num_steps,
-                                              pretrain_file, valid_step))
+                model = Model(sess, FLAGS)
                 getattr(model, 'test')()
+
+                # load previous model
+                pretrain_file = './model/model.ckpt-' + str(valid_step)
+                FLAGS.__flags['pretrain_file'] = pretrain_file
+
 
         else:
             # Set up tf session and initialize variables.
