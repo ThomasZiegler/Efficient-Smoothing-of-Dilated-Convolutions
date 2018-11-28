@@ -103,10 +103,10 @@ class Model(object):
         for step in range(self.conf.valid_num_steps):
             preds, _, _, c_matrix = self.sess.run([self.pred, self.accu_update_op, self.mIou_update_op, self.confusion_matrix])
             confusion_matrix += c_matrix
-            if step % 100 == 0:
-                write_log('step {:d}'.format(step), self.conf.logfile)
+#            if step % 100 == 0:
+#                write_log('step {:d}'.format(step), self.conf.logfile)
         write_log('Pixel Accuracy: {:.3f}'.format(self.accu.eval(session=self.sess)), self.conf.logfile)
-        write_log('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)), self.conf.logfile)
+#        write_log('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)), self.conf.logfile)
         self.compute_IoU_per_class(confusion_matrix)
 
         # finish
