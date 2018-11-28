@@ -112,6 +112,7 @@ def main(_):
                 sess = tf.Session()
                 model = Model(sess, FLAGS)
                 getattr(model, 'test')()
+                tf.reset_default_graph()
 
                 # load previous model
                 pretrain_file = './model/model.ckpt-' + str(valid_step)
