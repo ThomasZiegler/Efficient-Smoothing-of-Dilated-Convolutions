@@ -37,9 +37,16 @@ class Model(object):
 
         self.sess.run(tf.global_variables_initializer())
 
-        # Load the pre-trained model if provided
-        if self.conf.checkpoint_file is not None:
-            self.load(self.loader, self.conf.checkpoint_file)
+        if self.conf.start_step == 0:
+            # Load the pre-trained model if provided
+            if self.conf.checkpoint_file is not None:
+                self.load(self.loader, self.conf.pretrain_file)
+            pass
+        else:
+            # Load the checkpoint of model if provided
+            if self.conf.checkpoint_file is not None:
+                self.load(self.loader_checkpoint, self.conf.checkpoint_file)
+
 
         # Start queue threads.
         threads = tf.train.start_queue_runners(coord=self.coord, sess=self.sess)
@@ -238,7 +245,7 @@ class Model(object):
         # 'poly' learning rate
         base_lr = tf.constant(self.conf.learning_rate)
         self.curr_step = tf.placeholder(dtype=tf.float32, shape=())
-        learning_rate = tf.scalar_mul(base_lr, tf.pow((1 - self.curr_step / self.conf.num_steps), self.conf.power))
+        learning_rate = tf.scalar_mul(base_lr, tf.pow((1 - self.curr_step / self.conf.max_steps), self.conf.power))
         # We have several optimizers here in order to handle the different lr_mult
         # which is a kind of parameters in Caffe. This controls the actual lr for each
         # layer.
@@ -266,6 +273,9 @@ class Model(object):
 
         # Loader for loading the pre-trained model
         self.loader = tf.train.Saver(var_list=restore_var)
+
+        # Loader for loading the checkpoint files
+        self.loader_checkpoint = tf.train.Saver(var_list=tf.global_variables())
 
         # Training summary
         # Processed predictions: for visualisation.

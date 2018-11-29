@@ -23,6 +23,7 @@ def configure():
 #    flags.DEFINE_integer('num_steps', num_steps_, 'maximum number of iterations')
     flags.DEFINE_integer('start_step', 0, 'start number of iterations')
     flags.DEFINE_integer('num_steps', 20, 'maximum number of iterations')
+    flags.DEFINE_integer('max_steps', 20, 'maximum number of iterations')
     flags.DEFINE_integer('save_interval', 10000, 'number of iterations for saving and visualization')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
     flags.DEFINE_float('weight_decay', 0.0005, 'weight decay rate')
@@ -32,8 +33,10 @@ def configure():
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
 #    flags.DEFINE_string('pretrain_file', pretrain_file_, 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('pretrain_file', '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to encoder_name')
+#    flags.DEFINE_string('pretrain_file', '../reference_model/resnet_v1_101.ckpt', 'pre-trained model filename corresponding to encoder_name')
+#    flags.DEFINE_string('pretrain_file', None, 'pre-trained model filename corresponding to encoder_name')
     flags.DEFINE_string('checkpoint_file', '../reference_model/deeplab_resnet_init.ckpt', 'checkpoint model filename corresponding to encoder_name')
-    flags.DEFINE_string('dilated_type', 'smooth_GI', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
+    flags.DEFINE_string('dilated_type', 'regular', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC or average_filter')
     flags.DEFINE_string('data_list', './dataset/train.txt', 'training data list filename')
 
     # train & validate
@@ -88,10 +91,12 @@ def main(_):
         print("Please input a option: train, test, predict or train_test")
     else:
         if args.option == 'train_test':
-            num_iterations = 20
+            num_iterations = 10
             num_steps = 2000
             FLAGS = configure()
             FLAGS.__flags['num_steps'] = num_steps
+            FLAGS.__flags['max_steps'] = num_steps*num_iterations
+#            sess = tf.Session()
 
             for i in range(0, num_iterations):
                 write_log ('Iteration: %d' % (i+1), FLAGS.__flags['logfile'])
