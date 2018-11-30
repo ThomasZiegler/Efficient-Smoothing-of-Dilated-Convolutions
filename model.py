@@ -80,17 +80,6 @@ class Model(object):
         self.coord.request_stop()
         self.coord.join(threads)
 
-    # train and validate model
-    def train_test(self):
-        for it in range(self.conf.num_iterations+1):
-            # train
-            self.train()
-            self.conf.valid_step = (it+1)*self.conf.num_steps
-
-            # validate
-            self.test()
-            self.conf.pretrain_file = self.conf.modeldir+ '/model.ckpt-' + str(self.conf.valid_step)
-
     # evaluate
     def test(self):
         self.test_setup()
