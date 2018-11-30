@@ -34,7 +34,7 @@ def configure():
 
     # validation
     flags.DEFINE_integer('valid_step', 20, 'checkpoint number for validation')
-    flags.DEFINE_integer('valid_num_steps', os.enviorn['NR_VAL'], '= number of validation samples')
+    flags.DEFINE_integer('valid_num_steps', os.environ['NR_VAL'], '= number of validation samples')
     flags.DEFINE_string('valid_data_list', os.environ['VALDATALIST'], 'validation data list filename')
 
     # prediction / saving outputs for testing or validation
