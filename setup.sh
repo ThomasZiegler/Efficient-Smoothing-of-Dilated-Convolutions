@@ -15,7 +15,7 @@ if [[ $1 == cityscapes ]]; then
 
 else
 	echo "Use VOC2012 dataset"
-	export DATASET="$HOME/DL/VOC2012"
+	export DATASET="$PROJECT_DIR/../VOC2012"
 	export DATALIST="$PROJECT_DIR/dataset/train.txt"
 	export VALDATALIST="$PROJECT_DIR/dataset/val.txt"
 	export NR_VAL=1449
