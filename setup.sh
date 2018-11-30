@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PROJECT_DIR="$HOME/DL/Deeplab-v2--ResNet-101--Tensorflow"
+PROJECT_DIR="$(cd "." && pwd -P)"
 module purge
 module load StdEnv gcc/4.8.5 python_gpu/3.6.1
 if [[ $1 == cityscapes ]]; then
