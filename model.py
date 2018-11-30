@@ -184,13 +184,13 @@ class Model(object):
         elif self.conf.encoder_name == 'deeplab':
             net = Deeplab_v2(self.image_batch, self.conf.num_classes, True, self.conf.dilated_type)
             # Variables that load from pre-trained model.
-            restore_var = [v for v in tf.global_variables() if 'fc' not in v.name and 'fix_w' not in v.name]
+            restore_var = [v for v in tf.global_variables() if 'fc' not in v.name and 'fix_w' not in v.name and 'w_avg' not in v.name]
             # Trainable Variables
             all_trainable = tf.trainable_variables()
             # Fine-tune part
             encoder_trainable = [v for v in all_trainable if 'fc' not in v.name] # lr * 1.0
             # Decoder part
-            decoder_trainable = [v for v in all_trainable if 'fc' in v.name]
+            decoder_trainable = [v for v in all_trainable if 'fc' in v.name and 'w_avg' not in v.name]
         else:
             net = ResNet_segmentation(self.image_batch, self.conf.num_classes, True, self.conf.encoder_name, self.conf.dilated_type)
             # Variables that load from pre-trained model.

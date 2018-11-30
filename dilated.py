@@ -47,12 +47,15 @@ def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biase
     """
     Dilated conv2d with antecedent average filter and without BN or relu.
     """
-    # TODO: add average filter before here
-
+    # perform averaging 
     num_x = x.shape[3].value
+    w_avg = tf.Variable(tf.fill([3,3,num_x,num_o],1.0/9), name='w_avg')
+    s = [1, 1, 1, 1]
+    x_avg = tf.nn.conv2d(x, w_avg, s, padding='SAME')
+
     with tf.variable_scope(name) as scope:
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
-        o = tf.nn.atrous_conv2d(x, w, dilation_factor, padding='SAME')
+        o = tf.nn.atrous_conv2d(x_avg, w, dilation_factor, padding='SAME')
         if biased:
             b = tf.get_variable('biases', shape=[num_o])
             o = tf.nn.bias_add(o, b)
