@@ -25,6 +25,9 @@ def _dilated_conv2d(dilated_type, x, kernel_size, num_o, dilation_factor, name,
         return _smoothed_dilated_conv2d_SSC(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
     elif dilated_type == 'average_filter':
         return _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
+    elif dilated_type == 'gaussian_filter':
+        return _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
+
 
     else:
         print('dilated_type ERROR!')
@@ -56,6 +59,36 @@ def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filte
     w_avg = tf.Variable(tf.constant(w_avg_value, shape=[filter_size,filter_size,1,1,1]), name='w_avg')
     o = tf.expand_dims(x, -1)
     o = tf.nn.conv3d(o, w_avg, strides=[1,1,1,1,1], padding='SAME')
+    o = tf.squeeze(o, -1)
+
+    with tf.variable_scope(name) as scope:
+        w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
+        o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
+        if biased:
+            b = tf.get_variable('biases', shape=[num_o])
+            o = tf.nn.bias_add(o, b)
+        return o
+
+
+def _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size=1, biased=False):
+    """
+    Dilated conv2d with antecedent gaussian filter and without BN or relu.
+    """
+    num_x = x.shape[3].value
+
+    # perform gaussian filtering (as seprable convolution)
+    sigma = tf.constant(1.0, shape=[1])
+    # create kernel grid
+    ax = tf.range(-filter_size//2+1, filter_size//2+1, dtype=tf.float32)
+    xx, yy = tf.meshgrid(ax, ax)
+    # calculate weight and reshape to correct shape
+    w_gauss_value = tf.exp(-(xx**2 + yy**2) / (2.*sigma**2))
+    w_gauss_value / tf.reduce_sum(w_gauss_value)
+    w_gauss_value = tf.reshape(w_gauss_value, [filter_size,filter_size,1,1,1])
+    w_gauss = tf.Variable(w_gauss_value, name='w_gauss')
+
+    o = tf.expand_dims(x, -1)
+    o = tf.nn.conv3d(o, w_gauss, strides=[1,1,1,1,1], padding='SAME')
     o = tf.squeeze(o, -1)
 
     with tf.variable_scope(name) as scope:

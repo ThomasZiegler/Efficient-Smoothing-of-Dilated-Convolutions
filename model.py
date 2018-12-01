@@ -119,7 +119,8 @@ class Model(object):
 #        write_log('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)), self.conf.logfile)
         summary = self.compute_IoU_per_class(confusion_matrix)
         summary.value.add(tag='pixel accuracy', simple_value=accuracy)
-        self.summary_writer_test.add_summary(summary, (self.start_step+self.num_steps)
+        self.summary_writer_test.add_summary(summary,
+                                             (self.start_step+self.num_steps))
 
         # finish
         self.coord.request_stop()
@@ -201,13 +202,16 @@ class Model(object):
             net = Deeplab_v2(self.image_batch, self.conf.num_classes, True,
                              self.conf.dilated_type, self.conf.filter_size)
             # Variables that load from pre-trained model.
-            restore_var = [v for v in tf.global_variables() if 'fc' not in v.name and 'fix_w' not in v.name and 'w_avg' not in v.name]
+            restore_var = [v for v in tf.global_variables() if 'fc' not in
+                           v.name and 'fix_w' not in v.name and 'w_avg' not in
+                           v.name and 'w_gauss' not in v.name]
             # Trainable Variables
             all_trainable = tf.trainable_variables()
             # Fine-tune part
             encoder_trainable = [v for v in all_trainable if 'fc' not in v.name] # lr * 1.0
             # Decoder part
-            decoder_trainable = [v for v in all_trainable if 'fc' in v.name and 'w_avg' not in v.name]
+            decoder_trainable = [v for v in all_trainable if 'fc' in v.name and
+                                 'w_avg' not in v.name and 'w_gauss' not in v.name]
         else:
             net = ResNet_segmentation(self.image_batch, self.conf.num_classes, True, self.conf.encoder_name, self.conf.dilated_type, self.conf.filter_size)
             # Variables that load from pre-trained model.
