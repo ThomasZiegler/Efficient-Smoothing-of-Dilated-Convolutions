@@ -56,6 +56,7 @@ class Model(object):
         for step in range(self.conf.start_step, self.conf.start_step+self.conf.num_steps+1):
             start_time = time.time()
             feed_dict = { self.curr_step : step }
+            mIoU = 0
 
             if step % self.conf.save_interval == 0:
 #                loss_value, images, labels, preds, summary, _ = self.sess.run(
@@ -66,19 +67,23 @@ class Model(object):
 #                    self.total_summary,
 #                    self.train_op],
 #                    feed_dict=feed_dict)
-                loss_value, mIoU, summary, _ = self.sess.run(
+                loss_value, _, _ = self.sess.run(
                     [self.reduced_loss,
-                     self.mIoU,
-                    self.total_summary,
-                    self.train_op],
+                    self.train_op,
+                    self.mIou_update_op],
                     feed_dict=feed_dict)
+
+                mIoU = self.mIoU.eval(session=self.sess)
+                summary = tf.Summary()
+                summary.value.add(tag='mIoU', simple_value=mIoU)
+                summary.value.add(tag='loss', simple_value=loss_value)
 
                 self.summary_writer_train.add_summary(summary, step)
 #                self.save(self.saver, step)
             else:
                 loss_value, mIoU, _ = self.sess.run([self.reduced_loss,
                                                      self.mIoU, self.train_op], feed_dict=feed_dict)
-
+                mIoU = self.mIoU.eval(session=self.sess)
             duration = time.time() - start_time
 #           print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
             write_log('{:d}, {:.3f}, {:.3f}'.format(step, loss_value, mIoU), self.conf.logfile)
@@ -310,9 +315,9 @@ class Model(object):
 
 
         # Add Training summary
-        tf.summary.scalar('loss', self.reduced_loss)
-        tf.summary.scalar('pixel_accuracy', self.accu)
-        tf.summary.scalar('mIoU', self.mIoU)
+#        tf.summary.scalar('loss', self.reduced_loss)
+#        tf.summary.scalar('pixel_accuracy', self.accu)
+#        tf.summary.scalar('mIoU', self.mIoU)
         self.total_summary = tf.summary.merge_all()
 
         if not os.path.exists(self.conf.logdir):
