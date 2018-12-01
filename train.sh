@@ -1,6 +1,6 @@
 #!/bin/sh
 rm -f log.txt
-rm -f log/*
+rm -r -f log/*
 rm -f model/*
 rm -f parameters
 module purge
