@@ -81,8 +81,8 @@ class Model(object):
                 self.summary_writer_train.add_summary(summary, step)
 #                self.save(self.saver, step)
             else:
-                loss_value, mIoU, _ = self.sess.run([self.reduced_loss,
-                                                     self.mIoU, self.train_op], feed_dict=feed_dict)
+                loss_value, _, _ = self.sess.run([self.reduced_loss,
+                                                     self.train_op, self.mIou_update_op], feed_dict=feed_dict)
                 mIoU = self.mIoU.eval(session=self.sess)
             duration = time.time() - start_time
 #           print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
