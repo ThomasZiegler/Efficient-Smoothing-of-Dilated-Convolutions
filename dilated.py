@@ -50,7 +50,7 @@ def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biase
     num_x = x.shape[3].value
 
     # perform averaging (as seprable convolution)
-    w_avg_size = 5
+    w_avg_size = 3
     w_avg_value = 1.0/(w_avg_size*w_avg_size)
     w_avg = tf.Variable(tf.constant(w_avg_value, shape=[w_avg_size,w_avg_size,1,1,1]), name='w_avg')
     o = tf.expand_dims(x, -1)
