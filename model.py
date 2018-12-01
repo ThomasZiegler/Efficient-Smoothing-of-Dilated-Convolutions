@@ -182,7 +182,8 @@ class Model(object):
             print("Please input: res101, res50, or deeplab")
             sys.exit(-1)
         elif self.conf.encoder_name == 'deeplab':
-            net = Deeplab_v2(self.image_batch, self.conf.num_classes, True, self.conf.dilated_type)
+            net = Deeplab_v2(self.image_batch, self.conf.num_classes, True,
+                             self.conf.dilated_type, self.conf.filter_size)
             # Variables that load from pre-trained model.
             restore_var = [v for v in tf.global_variables() if 'fc' not in v.name and 'fix_w' not in v.name and 'w_avg' not in v.name]
             # Trainable Variables
@@ -192,7 +193,7 @@ class Model(object):
             # Decoder part
             decoder_trainable = [v for v in all_trainable if 'fc' in v.name and 'w_avg' not in v.name]
         else:
-            net = ResNet_segmentation(self.image_batch, self.conf.num_classes, True, self.conf.encoder_name, self.conf.dilated_type)
+            net = ResNet_segmentation(self.image_batch, self.conf.num_classes, True, self.conf.encoder_name, self.conf.dilated_type, self.conf.filter_size)
             # Variables that load from pre-trained model.
             restore_var = [v for v in tf.global_variables() if 'resnet_v1' in v.name and 'fix_w' not in v.name]
             # Trainable Variables
@@ -307,9 +308,9 @@ class Model(object):
             print("Please input: res101, res50, or deeplab")
             sys.exit(-1)
         elif self.conf.encoder_name == 'deeplab':
-            net = Deeplab_v2(self.image_batch, self.conf.num_classes, False, self.conf.dilated_type)
+            net = Deeplab_v2(self.image_batch, self.conf.num_classes, False, self.conf.dilated_type, self.conf.filter_size)
         else:
-            net = ResNet_segmentation(self.image_batch, self.conf.num_classes, False, self.conf.encoder_name, self.conf.dilated_type)
+            net = ResNet_segmentation(self.image_batch, self.conf.num_classes, False, self.conf.encoder_name, self.conf.dilated_type, self.conf.filter_size)
 
         # predictions
         raw_output = net.outputs
@@ -366,9 +367,9 @@ class Model(object):
             print("Please input: res101, res50, or deeplab")
             sys.exit(-1)
         elif self.conf.encoder_name == 'deeplab':
-            net = Deeplab_v2(image_batch, self.conf.num_classes, False, self.conf.dilated_type)
+            net = Deeplab_v2(image_batch, self.conf.num_classes, False, self.conf.dilated_type, self.conf.filter_size)
         else:
-            net = ResNet_segmentation(image_batch, self.conf.num_classes, False, self.conf.encoder_name, self.conf.dilated_type)
+            net = ResNet_segmentation(image_batch, self.conf.num_classes, False, self.conf.encoder_name, self.conf.dilated_type, self.conf.filter_size)
 
         # Predictions.
         raw_output = net.outputs

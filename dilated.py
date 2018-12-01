@@ -13,24 +13,26 @@ I appreciate ideas for a more efficient implementation of the proposed two smoot
 
 
 
-def _dilated_conv2d(dilated_type, x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _dilated_conv2d(dilated_type, x, kernel_size, num_o, dilation_factor, name,
+                    filter_size=1, biased=False):
     if dilated_type == 'regular':
-        return _regular_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased)
+        return _regular_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
     elif dilated_type == 'decompose':
-        return _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased)
+        return _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
     elif dilated_type == 'smooth_GI':
-        return _smoothed_dilated_conv2d_GI(x, kernel_size, num_o, dilation_factor, name, biased)
+        return _smoothed_dilated_conv2d_GI(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
     elif dilated_type == 'smooth_SSC':
-        return _smoothed_dilated_conv2d_SSC(x, kernel_size, num_o, dilation_factor, name, biased)
+        return _smoothed_dilated_conv2d_SSC(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
     elif dilated_type == 'average_filter':
-        return _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased)
+        return _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size, biased)
 
     else:
         print('dilated_type ERROR!')
         print("Please input: regular, decompose, smooth_GI or smooth_SSC")
         sys.exit(-1)
 
-def _regular_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _regular_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name,
+                            filter_size=1, biased=False):
     """
     Dilated conv2d without BN or relu.
     """
@@ -43,16 +45,15 @@ def _regular_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased
             o = tf.nn.bias_add(o, b)
         return o
 
-def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size=1, biased=False):
     """
     Dilated conv2d with antecedent average filter and without BN or relu.
     """
     num_x = x.shape[3].value
 
     # perform averaging (as seprable convolution)
-    w_avg_size = 3
-    w_avg_value = 1.0/(w_avg_size*w_avg_size)
-    w_avg = tf.Variable(tf.constant(w_avg_value, shape=[w_avg_size,w_avg_size,1,1,1]), name='w_avg')
+    w_avg_value = 1.0/(filter_size*filter_size)
+    w_avg = tf.Variable(tf.constant(w_avg_value, shape=[filter_size,filter_size,1,1,1]), name='w_avg')
     o = tf.expand_dims(x, -1)
     o = tf.nn.conv3d(o, w_avg, strides=[1,1,1,1,1], padding='SAME')
     o = tf.squeeze(o, -1)
@@ -65,7 +66,7 @@ def _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biase
             o = tf.nn.bias_add(o, b)
         return o
 
-def _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filter_size=1, biased=False):
     """
     Decomposed dilated conv2d without BN or relu.
     """
@@ -90,7 +91,7 @@ def _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, bia
     o = tf.batch_to_space(o, crops=pad, block_size=dilation_factor)
     return o
 
-def _smoothed_dilated_conv2d_GI(x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _smoothed_dilated_conv2d_GI(x, kernel_size, num_o, dilation_factor, name, filter_size=1, biased=False):
     """
     Smoothed dilated conv2d via the Group Interaction (GI) layer without BN or relu.
     """
@@ -123,7 +124,7 @@ def _smoothed_dilated_conv2d_GI(x, kernel_size, num_o, dilation_factor, name, bi
     o = tf.batch_to_space(o, crops=pad, block_size=dilation_factor)
     return o
 
-def _smoothed_dilated_conv2d_SSC(x, kernel_size, num_o, dilation_factor, name, biased=False):
+def _smoothed_dilated_conv2d_SSC(x, kernel_size, num_o, dilation_factor, name, filter_size=1, biased=False):
     """
     Smoothed dilated conv2d via the Separable and Shared Convolution (SSC) without BN or relu.
     """
