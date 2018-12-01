@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse
 import os
 import tensorflow as tf
+import json
 from model import Model
 from utils import write_log
 
@@ -68,6 +69,13 @@ def del_all_flags(FLAGS):
     for key in FLAGS.__flags.keys():
         FLAGS.__delattr__(key)
 
+def write_all_flags(FLAGS):
+    if not FLAGS.__dict__['__parsed']:
+        FLAGS._parse_flags()
+    with open('parameters.json', 'w') as fp:
+        json.dump(FLAGS.__flags, fp, indent=4)
+
+
 
 def main(_):
     parser = argparse.ArgumentParser()
@@ -82,11 +90,16 @@ def main(_):
         if args.option == 'train_test':
             num_iterations = 10
             num_steps = 2000
+            start_iteration = 0 
             FLAGS = configure()
             FLAGS.__flags['num_steps'] = num_steps
             FLAGS.__flags['max_steps'] = num_steps*num_iterations
+            FLAGS.__flags['start_step'] = start_iteration*num_steps
+            FLAGS.__flags['valid_step'] = (start_iteration+1)*num_steps
 
-            for i in range(0, num_iterations):
+            # store parameters in config file
+            write_all_flags(FLAGS)
+            for i in range(start_iteration, num_iterations):
                 write_log ('Iteration: %d' % (i+1), FLAGS.__flags['logfile'])
 
 
