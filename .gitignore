@@ -1,6 +1,7 @@
 # log files
 log/
 log.txt
+parameters.json
 
 # leonhard cluster job log
 lsf.*
