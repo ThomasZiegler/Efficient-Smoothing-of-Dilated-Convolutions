@@ -36,6 +36,7 @@ class Model(object):
         self.train_setup()
 
         self.sess.run(tf.global_variables_initializer())
+        self.sess.run(tf.local_variables_initializer())
 
         if self.conf.start_step == 0:
             # Load the pre-trained model if provided
@@ -57,23 +58,30 @@ class Model(object):
             feed_dict = { self.curr_step : step }
 
             if step % self.conf.save_interval == 0:
-                loss_value, images, labels, preds, summary, _ = self.sess.run(
+#                loss_value, images, labels, preds, summary, _ = self.sess.run(
+#                    [self.reduced_loss,
+#                    self.image_batch,
+#                    self.label_batch,
+#                    self.pred,
+#                    self.total_summary,
+#                    self.train_op],
+#                    feed_dict=feed_dict)
+                loss_value, mIoU, summary, _ = self.sess.run(
                     [self.reduced_loss,
-                    self.image_batch,
-                    self.label_batch,
-                    self.pred,
+                     self.mIoU,
                     self.total_summary,
                     self.train_op],
                     feed_dict=feed_dict)
-                self.summary_writer.add_summary(summary, step)
-                self.save(self.saver, step)
+
+                self.summary_writer_train.add_summary(summary, step)
+#                self.save(self.saver, step)
             else:
-                loss_value, _ = self.sess.run([self.reduced_loss, self.train_op],
-                    feed_dict=feed_dict)
+                loss_value, mIoU, _ = self.sess.run([self.reduced_loss,
+                                                     self.mIoU, self.train_op], feed_dict=feed_dict)
 
             duration = time.time() - start_time
 #           print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
-            write_log('{:d}, {:.3f}'.format(step, loss_value), self.conf.logfile)
+            write_log('{:d}, {:.3f}, {:.3f}'.format(step, loss_value, mIoU), self.conf.logfile)
 
         # finish
         self.save(self.saver, step)
@@ -101,9 +109,12 @@ class Model(object):
             confusion_matrix += c_matrix
 #            if step % 100 == 0:
 #                write_log('step {:d}'.format(step), self.conf.logfile)
-        write_log('Pixel Accuracy: {:.3f}'.format(self.accu.eval(session=self.sess)), self.conf.logfile)
+        accuracy = self.accu.eval(session=self.sess)
+        write_log('Pixel Accuracy: {:.3f}'.format(accuracy), self.conf.logfile)
 #        write_log('Mean IoU: {:.3f}'.format(self.mIoU.eval(session=self.sess)), self.conf.logfile)
-        self.compute_IoU_per_class(confusion_matrix)
+        summary = self.compute_IoU_per_class(confusion_matrix)
+        summary.value.add(tag='pixel accuracy', simple_value=accuracy)
+        self.summary_writer_test.add_summary(summary)
 
         # finish
         self.coord.request_stop()
@@ -272,16 +283,41 @@ class Model(object):
         raw_output_up = tf.image.resize_bilinear(raw_output, input_size)
         raw_output_up = tf.argmax(raw_output_up, axis=3)
         self.pred = tf.expand_dims(raw_output_up, dim=3)
+
+         #mIoU
+        pred_logits = tf.reshape(self.pred, [-1, ])
+        gt = tf.reshape(self.label_batch, [-1, ])
+         # Ignoring all labels greater than or equal to n_classes.
+        temp = tf.less_equal(gt, self.conf.num_classes - 1)
+        weights = tf.cast(temp, tf.int32)
+        # fix for tf 1.3.0
+        gt = tf.where(temp, gt, tf.cast(temp, tf.uint8))
+
+        # mIoU
+        self.mIoU, self.mIou_update_op = tf.contrib.metrics.streaming_mean_iou(pred_logits, gt, num_classes=self.conf.num_classes, weights=weights)
+
+        # Pixel accuracy
+        self.accu, self.accu_update_op = tf.contrib.metrics.streaming_accuracy(
+            pred_logits, gt, weights=weights)
+
         # Image summary.
-        images_summary = tf.py_func(inv_preprocess, [self.image_batch, 2, IMG_MEAN], tf.uint8)
-        labels_summary = tf.py_func(decode_labels, [self.label_batch, 2, self.conf.num_classes], tf.uint8)
-        preds_summary = tf.py_func(decode_labels, [self.pred, 2, self.conf.num_classes], tf.uint8)
-        self.total_summary = tf.summary.image('images',
-            tf.concat(axis=2, values=[images_summary, labels_summary, preds_summary]),
-            max_outputs=2) # Concatenate row-wise.
+#        images_summary = tf.py_func(inv_preprocess, [self.image_batch, 2, IMG_MEAN], tf.uint8)
+#        labels_summary = tf.py_func(decode_labels, [self.label_batch, 2, self.conf.num_classes], tf.uint8)
+#        preds_summary = tf.py_func(decode_labels, [self.pred, 2, self.conf.num_classes], tf.uint8)
+#        self.total_summary = tf.summary.image('images',
+#            tf.concat(axis=2, values=[images_summary, labels_summary, preds_summary]),
+#            max_outputs=2) # Concatenate row-wise.
+
+
+        # Add Training summary
+        tf.summary.scalar('loss', self.reduced_loss)
+        tf.summary.scalar('pixel_accuracy', self.accu)
+        tf.summary.scalar('mIoU', self.mIoU)
+        self.total_summary = tf.summary.merge_all()
+
         if not os.path.exists(self.conf.logdir):
             os.makedirs(self.conf.logdir)
-        self.summary_writer = tf.summary.FileWriter(self.conf.logdir, graph=tf.get_default_graph())
+        self.summary_writer_train = tf.summary.FileWriter(self.conf.logdir+'/train', graph=tf.get_default_graph())
 
     def test_setup(self):
         # Create queue coordinator.
@@ -341,6 +377,7 @@ class Model(object):
 
         # Loader for loading the checkpoint
         self.loader = tf.train.Saver(var_list=tf.global_variables())
+        self.summary_writer_test = tf.summary.FileWriter(self.conf.logdir+'/test')
 
     def predict_setup(self):
         # Create queue coordinator.
@@ -407,6 +444,7 @@ class Model(object):
 
     def compute_IoU_per_class(self, confusion_matrix):
         mIoU = 0
+        summary = tf.Summary()
         for i in range(self.conf.num_classes):
             # IoU = true_positive / (true_positive + false_positive + false_negative)
             TP = confusion_matrix[i,i]
@@ -414,5 +452,8 @@ class Model(object):
             FN = np.sum(confusion_matrix[i]) - TP
             IoU = TP / (TP + FP + FN)
             write_log ('class %d: %.3f' % (i, IoU), self.conf.logfile)
+            summary.value.add(tag='IoU class %d' % (i), simple_value=IoU)
             mIoU += IoU / self.conf.num_classes
         write_log ('mIoU: %.3f' % mIoU, self.conf.logfile)
+        summary.value.add(tag='mIoU', simple_value=mIoU)
+        return summary 

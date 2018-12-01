@@ -21,7 +21,7 @@ def configure():
     flags.DEFINE_integer('start_step', 0, 'start number of iterations')
     flags.DEFINE_integer('num_steps', 20, 'maximum number of iterations')
     flags.DEFINE_integer('max_steps', 20, 'maximum number of iterations')
-    flags.DEFINE_integer('save_interval', 10000, 'number of iterations for saving and visualization')
+    flags.DEFINE_integer('save_interval', 10, 'number of iterations for saving log to tensorboard')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
     flags.DEFINE_float('weight_decay', 0.0001, 'weight decay rate')
     flags.DEFINE_float('learning_rate', 0.002, 'learning rate')
