@@ -85,13 +85,15 @@ def _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filte
     xx, yy = tf.meshgrid(ax, ax)
     # calculate weight and reshape to correct shape
     w_gauss_value = tf.exp(-(xx**2 + yy**2) / (2.*sigma**2))
-    w_gauss_value / tf.reduce_sum(w_gauss_value)
+    w_gauss_value = w_gauss_value / tf.reduce_sum(w_gauss_value)
     w_gauss_value = tf.reshape(w_gauss_value, [filter_size,filter_size,num_x,1])
     w_gauss = tf.Variable(w_gauss_value, name='w_gauss')
+    
+    o = tf.nn.depthwise_conv2d_native(x, w_avg, [1,1,1,1], padding='SAME')
 
-    o = tf.expand_dims(x, -1)
-    o = tf.nn.conv3d(o, w_gauss, strides=[1,1,1,1,1], padding='SAME')
-    o = tf.squeeze(o, -1)
+    #o = tf.expand_dims(x, -1)
+    #o = tf.nn.conv3d(o, w_gauss, strides=[1,1,1,1,1], padding='SAME')
+    #o = tf.squeeze(o, -1)
 
     with tf.variable_scope(name) as scope:
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
