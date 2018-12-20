@@ -81,29 +81,32 @@ def _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, filte
 
     filter_size = dilation_factor - 1
 
-    # perform gaussian filtering (as seprable convolution)
-    sigma = tf.constant(1.0, shape=[1])
-    # create kernel grid
-    ax = tf.range(-filter_size//2+1, filter_size//2+1, dtype=tf.float32)
-    xx, yy = tf.meshgrid(ax, ax)
-    # calculate weight and reshape to correct shape
-    w_gauss_value = tf.exp(-(xx**2 + yy**2) / (2.*sigma**2))
-    w_gauss_value = w_gauss_value / tf.reduce_sum(w_gauss_value)
-
-    # dublicate kernel num_x times
-    w_gauss_value = tf.tile(tf.expand_dims(w_gauss_value,-1), [1,1,num_x])
-    # add expand one dimension to match depthwise_conv2d_native filter requirement
-    w_gauss_value = tf.expand_dims(w_gauss_value,-1)
-    w_gauss = tf.Variable(w_gauss_value, name='w_gauss')
-
-    
-    o = tf.nn.depthwise_conv2d_native(x, w_gauss, [1,1,1,1], padding='SAME')
-
-    #o = tf.expand_dims(x, -1)
+        #o = tf.expand_dims(x, -1)
     #o = tf.nn.conv3d(o, w_gauss, strides=[1,1,1,1,1], padding='SAME')
     #o = tf.squeeze(o, -1)
 
     with tf.variable_scope(name) as scope:
+        # perform gaussian filtering (as seprable convolution)
+        # init sigma value with 1
+        sigma_init = 1.75
+        init = tf.constant_initializer(sigma_init)
+        sigma = tf.get_variable('gauss_sigma', shape=[1], initializer=init)
+        # create kernel grid
+        ax = tf.range(-filter_size//2+1, filter_size//2+1, dtype=tf.float32)
+        xx, yy = tf.meshgrid(ax, ax)
+        # calculate weight and reshape to correct shape
+        w_gauss_value = tf.exp(-(xx**2 + yy**2) / (2.*sigma**2))
+        w_gauss_value = w_gauss_value / tf.reduce_sum(w_gauss_value)
+
+        # dublicate kernel num_x times
+        w_gauss_value = tf.tile(tf.expand_dims(w_gauss_value,-1), [1,1,num_x])
+        # add expand one dimension to match depthwise_conv2d_native filter requirement
+        w_gauss_value = tf.expand_dims(w_gauss_value,-1)
+        w_gauss = tf.Variable(w_gauss_value, name='w_gauss')
+
+        
+        o = tf.nn.depthwise_conv2d_native(x, w_gauss, [1,1,1,1], padding='SAME')
+
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
         o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
         if biased:

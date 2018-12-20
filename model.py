@@ -204,7 +204,7 @@ class Model(object):
             # Variables that load from pre-trained model.
             restore_var = [v for v in tf.global_variables() if 'fc' not in
                            v.name and 'fix_w' not in v.name and 'w_avg' not in
-                           v.name and 'w_gauss' not in v.name]
+                           v.name and 'w_gauss' not in v.name and 'gauss_sigma' not in v.name]
             # Trainable Variables
             all_trainable = tf.trainable_variables()
             # Fine-tune part
@@ -223,7 +223,7 @@ class Model(object):
             # Decoder part
             decoder_trainable = [v for v in all_trainable if 'decoder' in v.name]
         
-        decoder_w_trainable = [v for v in decoder_trainable if 'weights' in v.name or 'gamma' in v.name] # lr * 10.0
+        decoder_w_trainable = [v for v in decoder_trainable if 'weights' in v.name or 'gamma' in v.name or 'gauss_sigma' in v.name] # lr * 10.0
         decoder_b_trainable = [v for v in decoder_trainable if 'biases' in v.name or 'beta' in v.name] # lr * 20.0
         # Check
         assert(len(all_trainable) == len(decoder_trainable) + len(encoder_trainable))
