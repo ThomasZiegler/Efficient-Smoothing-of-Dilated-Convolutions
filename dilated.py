@@ -159,7 +159,8 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
 
 
 
-    c_ = [0.33, 0.33, 0.33]
+#    c_ = [0.33, 0.33, 0.33]
+    c_ = _get_c_vector(top_scope)
 
     with tf.variable_scope(name) as scope:
         fix_w = tf.get_variable('fix_w', shape=[fix_w_size, fix_w_size, 1, 1, 1], initializer=tf.zeros_initializer)
@@ -175,7 +176,7 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
 
 
 
-        o = c_[0]*o_avg + c_[1]*o_gauss + c_[2]*o_ssc
+        o = c_[0]*x + c_[1]*o_avg + c_[2]*o_gauss + c_[3]*o_ssc
 
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
         o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
@@ -187,8 +188,20 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
    
 
 
+def _get_c_vector(name):
+    """
+    Return c vector 
+    """
+    with tf.variable_scope(name) as scope:
+        try:
+            c_ = tf.get_variable('c_vector', shape=[3], initializer=tf.constant_initializer([1.0, 1.0, 1.0, 1.0]))
 
+        except ValueError:
+            scope.reuse_variables()
+            c_ = tf.get_variable('c_vector')
 
+    c_.assign(tf.nn.softmax(c_))
+    return c_
 
 
 

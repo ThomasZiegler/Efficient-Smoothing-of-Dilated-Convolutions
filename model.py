@@ -54,7 +54,7 @@ class Model(object):
         threads = tf.train.start_queue_runners(coord=self.coord, sess=self.sess)
 
         # Train!
-        c_vector = np.array([0,0,0])
+        c_vector = np.array([0,0,0,0])
         for step in range(self.conf.start_step, self.conf.start_step+self.conf.num_steps+1):
             start_time = time.time()
             feed_dict = { self.curr_step : step }
