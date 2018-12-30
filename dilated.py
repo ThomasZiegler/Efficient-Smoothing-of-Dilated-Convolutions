@@ -27,7 +27,7 @@ def _dilated_conv2d(dilated_type, x, kernel_size, num_o, dilation_factor, name,
         return _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
     elif dilated_type == 'gaussian_filter':
         return _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
-    elif dilated_type == 'combinational_layer':
+    elif dilated_type == 'aggregation':
         return _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
 
 
@@ -116,6 +116,67 @@ def _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_s
             b = tf.get_variable('biases', shape=[num_o])
             o = tf.nn.bias_add(o, b)
         return o
+
+
+
+def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope, biased=False):
+    """
+    Combination of Gaussian, Average, and SSC prefilter
+    """
+    num_x = x.shape[3].value
+
+    filter_size = dilation_factor - 1
+    # perform averaging (as seprable convolution)
+    w_avg_value = 1.0/(filter_size*filter_size)
+    w_avg = tf.Variable(tf.constant(w_avg_value,
+                                    shape=[filter_size,filter_size,num_x,1]), name='w_avg')
+    o_avg = tf.nn.depthwise_conv2d_native(x, w_avg, [1,1,1,1], padding='SAME')
+
+
+
+    sigma = 1.0
+    ax = np.arange(-filter_size // 2 + 1., filter_size // 2 + 1.)
+    xx, yy = np.meshgrid(ax, ax)
+
+    kernel = np.exp(-(xx**2 + yy**2)) 
+    w_gauss_value = tf.Variable(tf.constant(0.0,
+                                shape=[filter_size,filter_size, 1,1,1]), name='w_gauss_value',trainable=False)
+
+    mask = np.zeros([filter_size,filter_size, 1, 1, 1], dtype=np.float32)
+    mask[:, :, 0, 0, 0] = kernel
+
+    w_gauss_value = tf.add(w_gauss_value, tf.constant(mask, dtype=tf.float32))
+    w_gauss_value = tf.div(w_gauss_value, tf.exp(2.0 * sigma**2))
+    w_gauss_value = tf.div(w_gauss_value, tf.reduce_sum(w_gauss_value))
+
+    o_gauss = tf.expand_dims(x, -1)
+    o_gauss = tf.nn.conv3d(o_gauss, w_gauss_value, strides=[1,1,1,1,1], padding='SAME')
+    o_gauss = tf.squeeze(o_gauss, -1)
+
+
+
+
+
+    c_ = [0.5, 0.5, 0]
+    
+    with tf.variable_scope(name) as scope:
+
+        o = c_[0]*o_avg + c_[1]*o_gauss
+
+        w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
+        o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
+        if biased:
+            b = tf.get_variable('biases', shape=[num_o])
+            o = tf.nn.bias_add(o, b)
+        return o
+
+   
+
+
+
+
+
+
 
 def _decomposed_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_scope, biased=False):
     """
