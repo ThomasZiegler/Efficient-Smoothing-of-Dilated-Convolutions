@@ -125,7 +125,9 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
     """
     num_x = x.shape[3].value
 
+    fix_w_size = dilation_factor * 2 - 1
     filter_size = dilation_factor - 1
+
     # perform averaging (as seprable convolution)
     w_avg_value = 1.0/(filter_size*filter_size)
     w_avg = tf.Variable(tf.constant(w_avg_value,
@@ -157,11 +159,23 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
 
 
 
-    c_ = [0.5, 0.5, 0]
-    
-    with tf.variable_scope(name) as scope:
+    c_ = [0.33, 0.33, 0.33]
 
-        o = c_[0]*o_avg + c_[1]*o_gauss
+    with tf.variable_scope(name) as scope:
+        fix_w = tf.get_variable('fix_w', shape=[fix_w_size, fix_w_size, 1, 1, 1], initializer=tf.zeros_initializer)
+        mask = np.zeros([fix_w_size, fix_w_size, 1, 1, 1], dtype=np.float32)
+        mask[dilation_factor - 1, dilation_factor - 1, 0, 0, 0] = 1
+        fix_w = tf.add(fix_w, tf.constant(mask, dtype=tf.float32))
+        o_ssc = tf.expand_dims(x, -1)
+        o_ssc = tf.nn.conv3d(o_ssc, fix_w, strides=[1,1,1,1,1], padding='SAME')
+        o_ssc = tf.squeeze(o_ssc, -1)
+
+
+
+
+
+
+        o = c_[0]*o_avg + c_[1]*o_gauss + c_[2]*o_ssc
 
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
         o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
