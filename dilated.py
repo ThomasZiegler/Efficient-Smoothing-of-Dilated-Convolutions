@@ -121,21 +121,19 @@ def _gaussian_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_s
 
 def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope, biased=False):
     """
-    Combination of Gaussian, Average, and SSC prefilter
+    Combination of Gaussian, Average, SSC prefilter together with non per-filtered input
     """
     num_x = x.shape[3].value
-
     fix_w_size = dilation_factor * 2 - 1
     filter_size = dilation_factor - 1
 
-    # perform averaging (as seprable convolution)
+    # perform average filtering (as seprable convolution)
     w_avg_value = 1.0/(filter_size*filter_size)
     w_avg = tf.Variable(tf.constant(w_avg_value,
                                     shape=[filter_size,filter_size,num_x,1]), name='w_avg')
     o_avg = tf.nn.depthwise_conv2d_native(x, w_avg, [1,1,1,1], padding='SAME')
 
-
-
+    # perform gaussian filtering 
     sigma = 1.0
     ax = np.arange(-filter_size // 2 + 1., filter_size // 2 + 1.)
     xx, yy = np.meshgrid(ax, ax)
@@ -147,22 +145,21 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
     mask = np.zeros([filter_size,filter_size, 1, 1, 1], dtype=np.float32)
     mask[:, :, 0, 0, 0] = kernel
 
+    # create gaussian filter 
     w_gauss_value = tf.add(w_gauss_value, tf.constant(mask, dtype=tf.float32))
     w_gauss_value = tf.div(w_gauss_value, tf.exp(2.0 * sigma**2))
     w_gauss_value = tf.div(w_gauss_value, tf.reduce_sum(w_gauss_value))
 
+    # perform separable convolution
     o_gauss = tf.expand_dims(x, -1)
     o_gauss = tf.nn.conv3d(o_gauss, w_gauss_value, strides=[1,1,1,1,1], padding='SAME')
     o_gauss = tf.squeeze(o_gauss, -1)
 
-
-
-
-
-#    c_ = [0.33, 0.33, 0.33]
+    # get c vector
     c_ = _get_c_vector(top_scope)
 
     with tf.variable_scope(name) as scope:
+        # perform SSC convolution
         fix_w = tf.get_variable('fix_w', shape=[fix_w_size, fix_w_size, 1, 1, 1], initializer=tf.zeros_initializer)
         mask = np.zeros([fix_w_size, fix_w_size, 1, 1, 1], dtype=np.float32)
         mask[dilation_factor - 1, dilation_factor - 1, 0, 0, 0] = 1
@@ -171,13 +168,10 @@ def _combinational_layer(x, kernel_size, num_o, dilation_factor, name, top_scope
         o_ssc = tf.nn.conv3d(o_ssc, fix_w, strides=[1,1,1,1,1], padding='SAME')
         o_ssc = tf.squeeze(o_ssc, -1)
 
-
-
-
-
-
+        # perform aggregation (combine pre filters)
         o = c_[0]*x + c_[1]*o_avg + c_[2]*o_gauss + c_[3]*o_ssc
 
+        # perform dilated convolution
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
         o = tf.nn.atrous_conv2d(o, w, dilation_factor, padding='SAME')
         if biased:
@@ -193,13 +187,16 @@ def _get_c_vector(name):
     Return c vector 
     """
     with tf.variable_scope(name) as scope:
+        # init vector if not already done
         try:
-            c_ = tf.get_variable('c_vector', shape=[3], initializer=tf.constant_initializer([1.0, 1.0, 1.0, 1.0]))
+            c_ = tf.get_variable('c_vector', shape=[4], initializer=tf.constant_initializer([0.25, 0.25, 0.25, 0.25]))
 
+        # get vector if already initialized
         except ValueError:
             scope.reuse_variables()
             c_ = tf.get_variable('c_vector')
 
+    # perform soft-max to ensure values in [0,1] 
     c_.assign(tf.nn.softmax(c_))
     return c_
 
