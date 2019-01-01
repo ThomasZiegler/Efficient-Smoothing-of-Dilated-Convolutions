@@ -9,7 +9,7 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
 * Add training/validation iterations
 
    Add the possibility for cyclig training and validation. The model is trained for a certain number of steps, afterwards the validation is performed. This will be iterated until the defined number of iterations is reached.
-   Changes made in ```dilated.py``` and ```model.py```.
+   Changes made in ```model.py``` and changes as well as new configuration parameter in ```main.py```.
    
 * Extend the logging to Tensorboard
 
