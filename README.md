@@ -17,9 +17,9 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
    
 * Scripts for easy using on ETHZ's Leonhard cluster 
 
-   With the command ```source setup.sh``` one can set the parameters for the PASCAL VOC 2012 dataset
+   With the command ```source setup.sh``` one can set the parameters for the PASCAL VOC 2012 dataset.
    
-   With the command ```source setup.sh cityscapes``` one can set the parameters for the Cityscapes dataset
+   With the command ```source setup.sh cityscapes``` one can set the parameters for the Cityscapes dataset.
    
    With the command ```sh train.sh``` one can start the training/validation. (Ensure that the datasets are located at the path defined in setup.sh)
    
@@ -42,6 +42,8 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
 * Start the training
 
    Use the script  ```train.sh ``` to train the model. The parameters given in the main.py perform 20'000 training steps on the PASCAL VOC 2012 dataset with our proposed average filter.
+   
+   During the training the current *loss* and *mIoU* for each training step is written to the ```log.txt``` file. This helps to detect numerical instabilities (e.g. exploding of the loss) early. The validation results after each iteration are also written into the ```log.txt``` file.
 
 
 ## README of the source Repo 
