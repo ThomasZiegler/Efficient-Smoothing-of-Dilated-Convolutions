@@ -17,7 +17,7 @@ def configure():
 
     # training
     flags.DEFINE_integer('num_iterations', 10, 'total number of iterations, one iteration takes "num_steps" ')
-    flags.DEFINE_integer('start_iteration', 0, 'start number of iterations "num_iterations-start_iterations" iterations are performed')
+    flags.DEFINE_integer('start_iteration', 0, 'start number of iterations "num_iterations-start_iteration" iterations are performed')
     flags.DEFINE_integer('num_steps', 2000, 'number of steps within one iteration')
     flags.DEFINE_integer('save_interval', 10, 'number of iterations for saving log to tensorboard')
     flags.DEFINE_integer('random_seed', 1234, 'random seed')
@@ -28,7 +28,7 @@ def configure():
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
     flags.DEFINE_string('pretrain_file', '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to  encoder_name (loaded at beginning (step 0)')
     flags.DEFINE_string('checkpoint_file','../reference_model/deeplab_resnet_init.ckpt','checkpoint model filename corresponding to encoder_name, (loaded at beginning of new iteration)')
-    flags.DEFINE_string('dilated_type', 'aggregation', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC, average_filter, gaussian_filter, or aggregation')
+    flags.DEFINE_string('dilated_type', 'gaussian_filter', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC, average_filter, gaussian_filter, or aggregation')
     flags.DEFINE_string('data_list', os.environ['DATALIST'], 'training data list filename')
 
     # validation
@@ -87,7 +87,9 @@ def main(_):
     else:
         if args.option == 'train_test':
             FLAGS = configure()
-            FLAGS.__flags['num_steps'] = num_steps
+            num_steps = FLAGS.__flags['num_steps']
+            num_iterations = FLAGS.__flags['num_iterations']
+            start_iteration = FLAGS.__flags['start_iteration']
             FLAGS.__flags['max_steps'] = num_steps*num_iterations
             FLAGS.__flags['start_step'] = start_iteration*num_steps
             FLAGS.__flags['valid_step'] = (start_iteration+1)*num_steps

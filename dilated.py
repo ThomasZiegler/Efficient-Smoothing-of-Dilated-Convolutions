@@ -26,9 +26,9 @@ def _dilated_conv2d(dilated_type, x, kernel_size, num_o, dilation_factor, name,
     elif dilated_type == 'average_filter':
         return _averaged_dilated_conv2d(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
     elif dilated_type == 'gaussian_filter':
-        return _gaussian_dilated_conv2d_oneLearned(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
+        return _gaussian_dilated_conv2d_fix(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
     elif dilated_type == 'aggregation':
-        return _combinational_layer_learned(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
+        return _combinational_layer_fix(x, kernel_size, num_o, dilation_factor, name, top_scope, biased)
 
 
 
@@ -257,6 +257,7 @@ def _combinational_layer_learned(x, kernel_size, num_o, dilation_factor, name, t
     o_gauss = tf.nn.conv3d(o_gauss, w_gauss_value, strides=[1,1,1,1,1], padding='SAME')
     o_gauss = tf.squeeze(o_gauss, -1)
 
+
     # get c vector
     c_ = _get_c_vector(top_scope)
 
@@ -271,7 +272,7 @@ def _combinational_layer_learned(x, kernel_size, num_o, dilation_factor, name, t
         o_ssc = tf.squeeze(o_ssc, -1)
 
         # perform aggregation (combine pre filters)
-        o = c_[0]*x + c_[1]*o_avg + c_[2]*o_gauss + c_[3]*o_ssc
+        o = c_[0]*x + c_[2]*o_avg + c_[1]*o_gauss + c_[3]*o_ssc
 
         # perform dilated convolution
         w = tf.get_variable('weights', shape=[kernel_size, kernel_size, num_x, num_o])
