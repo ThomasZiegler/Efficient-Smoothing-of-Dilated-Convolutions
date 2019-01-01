@@ -1,3 +1,22 @@
+# Title
+This is the code for reproducing the experiments of our paper "title". The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
+
+## Changes compare to source code
+* Addition of our proposed pre-filters:
+We added our proposed pre-filters (Average, Gaussian, and an Aggregation of them) in the dilated.py file. Small changes also in the network.py and model.py file
+* Add training/validation iterations
+Add the possibility for cyclig training and validation. The model is trained for a certain number of steps, afterwards the validation is performed. This will be itterated until the defined number of iterations is reached.
+Changes performed in:   - dilated.py
+                        - model.py
+* Scripts for easy using on ETHZ's Leonhard cluster 
+With the command "source setup.sh" one can set the parameters for the PASCAL VOC 2012 dataset
+With the command "source setup.sh cityscapes" one can set the parameters for the Cityscapes dataset
+With the command "sh train.sh" one can start the training/validation. (Ensure that the datasets are located at the path defined in setup.sh)
+With the command "sh clear.sh" one can clean the workspace after an training/validation. All important log files will be combined in a tar file.
+
+## How to run
+
+
 # Smoothed Dilated Convolutions for Improved Dense Prediction
 
 This is the code for reproducing experimental results in our paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction) accepted for long presentation in KDD2018. 
@@ -28,7 +47,7 @@ We perform the effective receptive field analysis to visualize the smoothing eff
 **Effective Receptive Field Analysis**:
 
 ![model](./results/Results_ERF.png)
-
+f
 ## Introduction
 The baseline is an (re-)implementation of [DeepLab v2 (ResNet-101)](http://liangchiehchen.com/projects/DeepLabv2_resnet.html) in TensorFlow for semantic image segmentation on the [PASCAL VOC 2012 dataset](http://host.robots.ox.ac.uk/pascal/VOC/). We refer to [DrSleep's implementation](https://github.com/DrSleep/tensorflow-deeplab-resnet) (Many thanks!). We do not use tf-to-caffe packages like kaffe so you only need TensorFlow 1.3.0+ to run this code.
 
