@@ -1,21 +1,51 @@
-# Title
-This is the code for reproducing the experiments of our paper "title". The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
+# Efficient Smoothing of Dilated Convolutions for Image Segmentation
+This is the code for reproducing the experiments of our paper *Efficient Smoothing of Dilated Convolutions for Image Segmentation*. The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
 
 ## Changes compare to source code
 * Addition of our proposed pre-filters:
-We added our proposed pre-filters (Average, Gaussian, and an Aggregation of them) in the dilated.py file. Small changes also in the network.py and model.py file
+   
+
+   We added our proposed pre-filters (Average, Gaussian, and an Aggregation of them) in the ```dilated.py``` file. Small changes also in the ```network.py``` and ```model.py``` file
 * Add training/validation iterations
-Add the possibility for cyclig training and validation. The model is trained for a certain number of steps, afterwards the validation is performed. This will be itterated until the defined number of iterations is reached.
-Changes performed in:   - dilated.py
-                        - model.py
+
+   Add the possibility for cyclig training and validation. The model is trained for a certain number of steps, afterwards the validation is performed. This will be iterated until the defined number of iterations is reached.
+   Changes made in ```dilated.py``` and ```model.py```.
+   
+* Extend the logging to Tensorboard
+
+   During training and at the end of each validation the IoU per class and the mean IoU (mIoU) are logged to be viewd in TensorBoard. Changes performed in ```model.py```.
+   
 * Scripts for easy using on ETHZ's Leonhard cluster 
-With the command "source setup.sh" one can set the parameters for the PASCAL VOC 2012 dataset
-With the command "source setup.sh cityscapes" one can set the parameters for the Cityscapes dataset
-With the command "sh train.sh" one can start the training/validation. (Ensure that the datasets are located at the path defined in setup.sh)
-With the command "sh clear.sh" one can clean the workspace after an training/validation. All important log files will be combined in a tar file.
+
+   With the command ```source setup.sh``` one can set the parameters for the PASCAL VOC 2012 dataset
+   
+   With the command ```source setup.sh cityscapes``` one can set the parameters for the Cityscapes dataset
+   
+   With the command ```sh train.sh``` one can start the training/validation. (Ensure that the datasets are located at the path defined in setup.sh)
+   
+   With the command ```sh clear.sh``` one can clean the workspace after an training/validation. All important log files will be combined in a tar file.
 
 ## How to run
+* Clone this repo
 
+* Download the needed models and data sets 
+
+   The [DL Model](https://polybox.ethz.ch/index.php/s/bN8tygteBgOdUzv) file contains the pre-trained deeplabv2 models and the augmented PASCAL VOC 2012 dataset.
+   
+   The [Cityscapes](https://polybox.ethz.ch/index.php/s/xxOtMP63jZprmr7) file contains the Cityscapes dataset.
+   
+   
+* Source your workspace
+
+   Use the script  ```setup.sh ``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly.
+   
+* Start the training
+
+   Use the script  ```train.sh ``` to train the model. The parameters given in the main.py perform 20'000 training steps on the PASCAL VOC 2012 dataset with our proposed average filter.
+
+
+## README of the source Repo 
+***
 
 ># Smoothed Dilated Convolutions for Improved Dense Prediction
 >
