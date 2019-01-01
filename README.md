@@ -1,7 +1,7 @@
 # Efficient Smoothing of Dilated Convolutions for Image Segmentation
 This is the code for reproducing the experiments of our paper *Efficient Smoothing of Dilated Convolutions for Image Segmentation*. The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
 
-## Changes compare to source code
+## Changes compare to source Repo
 * Addition of our proposed pre-filters:
    
 
@@ -26,7 +26,7 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
    With the command ```sh clear.sh``` one can clean the workspace after an training/validation. All important log files will be combined in a tar file.
 
 ## How to run
-* Clone this repo
+* Clone this Repo
 
 * Download the needed models and data sets 
 
