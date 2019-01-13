@@ -54,7 +54,7 @@ class Model(object):
         threads = tf.train.start_queue_runners(coord=self.coord, sess=self.sess)
 
         # Train!
-        c_vector = np.array([0,0,0,0])
+#        c_vector = np.array([0,0,0,0])
         for step in range(self.conf.start_step, self.conf.start_step+self.conf.num_steps+1):
             start_time = time.time()
             feed_dict = { self.curr_step : step }
@@ -80,11 +80,11 @@ class Model(object):
                 summary.value.add(tag='mIoU', simple_value=mIoU)
                 summary.value.add(tag='loss', simple_value=loss_value)
 
-                try:
-                    var_c = [v for v in tf.global_variables() if 'c_vector' in v.name][0]
-                    c_vector = var_c.eval(session=self.sess)
-                except:
-                    pass
+#                try:
+#                    var_c = [v for v in tf.global_variables() if 'c_vector' in v.name][0]
+#                    c_vector = var_c.eval(session=self.sess)
+#                except:
+#                    pass
 
 
                 self.summary_writer_train.add_summary(summary, step)
@@ -94,17 +94,17 @@ class Model(object):
                                                      self.train_op, self.mIou_update_op], feed_dict=feed_dict)
                 mIoU = self.mIoU.eval(session=self.sess)
 
-                try:
-                    var_c = [v for v in tf.global_variables() if 'c_vector' in v.name][0]
-                    c_vector = var_c.eval(session=self.sess)
-                except:
-                    pass
+#                try:
+#                    var_c = [v for v in tf.global_variables() if 'c_vector' in v.name][0]
+#                    c_vector = var_c.eval(session=self.sess)
+#                except:
+#                    pass
 
 
             duration = time.time() - start_time
 #           print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
-#            write_log('{:d}, {:.3f}, {:.3f}'.format(step, loss_value, mIoU), self.conf.logfile)
-            write_log('{:d}, {:.3f}, {:.3f}, {:}'.format(step, loss_value, mIoU, c_vector), self.conf.logfile)
+            write_log('{:d}, {:.3f}, {:.3f}'.format(step, loss_value, mIoU), self.conf.logfile)
+#            write_log('{:d}, {:.3f}, {:.3f}, {:}'.format(step, loss_value, mIoU, c_vector), self.conf.logfile)
 
         # finish
         self.save(self.saver, step)
