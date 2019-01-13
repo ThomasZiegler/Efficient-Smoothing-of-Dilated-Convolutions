@@ -16,7 +16,7 @@ def configure():
     flags = tf.app.flags
 
     # training
-    flags.DEFINE_integer('num_iterations', 10, 'total number of iterations, one iteration takes "num_steps" ')
+    flags.DEFINE_integer('num_iterations', os.environ['NUM_ITER'], 'total number of iterations, one iteration takes "num_steps" ')
     flags.DEFINE_integer('start_iteration', 0, 'start number of iterations "num_iterations-start_iteration" iterations are performed')
     flags.DEFINE_integer('num_steps', 2000, 'number of steps within one iteration')
     flags.DEFINE_integer('save_interval', 10, 'number of iterations for saving log to tensorboard')

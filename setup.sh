@@ -13,7 +13,7 @@ if [[ $1 == cityscapes ]]; then
 	export IMG_SIZE=719
 	export NUM_CLASSES=19
 	export LEARNING_RATE=0.0001
-
+	export NUM_ITER=40
 else
 	echo "Use VOC2012 dataset"
 	export DATASET="$PROJECT_DIR/../VOC2012"
@@ -24,6 +24,7 @@ else
 	export IMG_SIZE=321
 	export NUM_CLASSES=21
 	export LEARNING_RATE=0.002
+	export NUM_ITER=10
 fi
 
 
