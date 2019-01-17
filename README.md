@@ -1,6 +1,13 @@
 # Efficient Smoothing of Dilated Convolutions for Image Segmentation
 This is the code for reproducing the experiments of our paper *Efficient Smoothing of Dilated Convolutions for Image Segmentation*. The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
 
+
+## Authors
+* Konstantin Donhauser [donhausk at ethz.ch]
+* Manuel Fritsche [manuelf at ethz.ch]
+* Lorenz Kuhn [kuhnl at ethz.ch]
+* Thomas Ziegler [zieglert at ethz.ch]
+
 ## Changes compare to source Repo
 * Addition of our proposed pre-filters:
    
@@ -37,11 +44,16 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
    
 * Source your workspace
 
-   Use the script  ```setup.sh ``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly.
+   Use the script  ```setup.sh``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly.
+   
+* Select desired pre-filter
+
+   Select desired pre-filter in ```main.py```. Default filter is our proposed Average filter.
+
    
 * Start the training
 
-   Use the script  ```train.sh ``` to train the model. The parameters given in the main.py perform 20'000 training steps on the PASCAL VOC 2012 dataset with our proposed average filter.
+   Use the script  ```train.sh``` to train the model. For experiments on the Cityscapes dataset the time limits in the ```bsub``` command need to be increased e.g. ```-W 92:00```.
    
    During the training the current *loss* and *mIoU* for each training step is written to the ```log.txt``` file. This helps to detect numerical instabilities (e.g. exploding of the loss) early. The validation results after each iteration are also written into the ```log.txt``` file.
 
