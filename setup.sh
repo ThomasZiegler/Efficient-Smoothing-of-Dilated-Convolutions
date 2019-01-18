@@ -1,8 +1,7 @@
 #!/bin/sh
 
 PROJECT_DIR="$(cd "." && pwd -P)"
-module purge
-module load StdEnv gcc/4.8.5 python_gpu/3.6.1
+
 if [[ $1 == cityscapes ]]; then
 	echo "Use cityscapes dataset"
 	export DATASET="/cluster/scratch/$USER/cityscapes"
