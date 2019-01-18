@@ -12,7 +12,7 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
 * Addition of our proposed pre-filters:
    
 
-   We added our proposed pre-filters (Average, Gaussian, and an Aggregation of them) in the ```dilated.py``` file. Small changes also in the ```network.py``` and ```model.py``` file
+   We added our proposed pre-filters (*Average*, *Gaussian*, and an *Aggregation* of them) in the ```dilated.py``` file. Small changes also in the ```network.py``` and ```model.py``` file
 * Add training/validation iterations
 
    Add the possibility for cyclig training and validation. The model is trained for a certain number of steps, afterwards the validation is performed. This will be iterated until the defined number of iterations is reached.
@@ -42,13 +42,14 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
    The [Cityscapes](https://polybox.ethz.ch/index.php/s/xxOtMP63jZprmr7) file contains the Cityscapes dataset.
    
    
+* Select desired pre-filter
+
+   Select desired pre-filter in ```main.py```. Default filter is our proposed *Average* filter. If one chooses *Aggregation* the batch size has to be reduced in the ```setup.sh``` file. Furthermore make sure that the files of the pre-trained models are located as defined in the ```main.py``` file (*pretrain_file* and *checkpoint_file* parameter).  
+   
 * Source your workspace
 
    Use the script  ```setup.sh``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly. Use command ```source setup.sh``` or ```source setup.sh cityscapes```. 
    
-* Select desired pre-filter
-
-   Select desired pre-filter in ```main.py```. Default filter is our proposed Average filter. Furthermore make sure that the files of the pre-trained models *pretrain_file* and *checkpoint_file* are located as defined in the ```main.py``` file. 
    
 * Start the training
 
