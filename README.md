@@ -37,7 +37,7 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
 
 * Download the needed models and data sets 
 
-   The [DL Model](https://polybox.ethz.ch/index.php/s/bN8tygteBgOdUzv) file contains the pre-trained deeplabv2 models and the augmented PASCAL VOC 2012 dataset.
+   The [VOC_and_refModel](https://polybox.ethz.ch/index.php/s/6JpwFPdt4dIDMf2) file contains the augmented PASCAL VOC 2012 dataset and the pre-trained deeplabv2 models.
    
    The [Cityscapes](https://polybox.ethz.ch/index.php/s/xxOtMP63jZprmr7) file contains the Cityscapes dataset.
    
