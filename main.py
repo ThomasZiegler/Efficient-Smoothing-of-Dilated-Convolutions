@@ -28,7 +28,7 @@ def configure():
     flags.DEFINE_string('encoder_name', 'deeplab', 'name of pre-trained model: res101, res50 or deeplab')
     flags.DEFINE_string('pretrain_file', '../reference_model/deeplab_resnet_init.ckpt', 'pre-trained model filename corresponding to  encoder_name (loaded at beginning (step 0)')
     flags.DEFINE_string('checkpoint_file','../reference_model/deeplab_resnet_init.ckpt','checkpoint model filename corresponding to encoder_name, (loaded at beginning of new iteration)')
-    flags.DEFINE_string('dilated_type', 'gaussian_filter', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC, average_filter, gaussian_filter, or aggregation')
+    flags.DEFINE_string('dilated_type', 'average_filter', 'type of dilated conv: regular, decompose, smooth_GI, smooth_SSC, average_filter, gaussian_filter, or aggregation')
     flags.DEFINE_string('data_list', os.environ['DATALIST'], 'training data list filename')
 
     # validation
