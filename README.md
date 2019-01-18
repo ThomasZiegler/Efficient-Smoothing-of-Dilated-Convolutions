@@ -1,5 +1,5 @@
 # Efficient Smoothing of Dilated Convolutions for Image Segmentation
-This is the code for reproducing the experiments of our paper *Efficient Smoothing of Dilated Convolutions for Image Segmentation*. The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
+This is the code for reproducing the experiments of our project *Efficient Smoothing of Dilated Convolutions for Image Segmentation*. The code is based on the source code of the paper [Smoothed Dilated Convolutions for Improved Dense Prediction](http://www.kdd.org/kdd2018/accepted-papers/view/smoothed-dilated-convolutions-for-improved-dense-prediction), see original README below.
 
 
 ## Authors
