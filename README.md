@@ -44,19 +44,22 @@ This is the code for reproducing the experiments of our paper *Efficient Smoothi
    
 * Source your workspace
 
-   Use the script  ```setup.sh``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly.
+   Use the script  ```setup.sh``` to source the workspace. Make sure that either the datasets are at the locations specified in the file or change the file accordingly. Use command ```source setup.sh``` or ```source setup.sh cityscapes```. 
    
 * Select desired pre-filter
 
-   Select desired pre-filter in ```main.py```. Default filter is our proposed Average filter.
-
+   Select desired pre-filter in ```main.py```. Default filter is our proposed Average filter. Furthermore make sure that the files of the pre-trained models *pretrain_file* and *checkpoint_file* are located as defined in the ```main.py``` file. 
    
 * Start the training
 
-   Use the script  ```train.sh``` to train the model. For experiments on the Cityscapes dataset the time limits in the ```bsub``` command need to be increased e.g. ```-W 92:00```.
+   With ```sh train.sh``` one can start to train the model. For experiments on the Cityscapes dataset the time limits in the *bsub* command need to be increased e.g. *-W 92:00*. Change ```train.sh``` file accordingly. (If one does not run on ETHZ's Leonhard cluster one can start the training with ```python main.py --option=train_test```. One might want to clean the folder beforehand as its done in the ```train.sh``` file.)
+
    
    During the training the current *loss* and *mIoU* for each training step is written to the ```log.txt``` file. This helps to detect numerical instabilities (e.g. exploding of the loss) early. The validation results after each iteration are also written into the ```log.txt``` file.
 
+* Collect results
+
+   After the training is finished one can collect all relevant files by running ```sh clear.sh```. The collection is moved to the home folder ```~/```. 
 
 ## README of the source Repo 
 ***
